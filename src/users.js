@@ -1,7 +1,7 @@
 const users = [
   {
-    username: 'erb1',
-    password: 'password123',
+    username: 'usererb',
+    password: '787707617',
     name: 'Manikandan S',
     role: 'ERP Inspector',
     photo: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150'
