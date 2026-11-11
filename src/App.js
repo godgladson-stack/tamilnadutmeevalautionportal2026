@@ -80,7 +80,7 @@ function App() {
           <div style={styles.card}>
             {!selectedRole ? (
               <div>
-                <h1 style={styles.portalTitle}>Tamil Nadu TME Evaluation Portal 2026</h1>
+                <h1 style={styles.portalTitle}>Tamil Nadu TME Evaluation Portal 2026 OSDEE VALUATION</h1>
                 <div style={styles.buttonGroup}>
                   <button style={styles.button} onClick={() => setSelectedRole('ERB Inspector')}>ERB Inspector</button>
                   <button style={styles.button} onClick={() => setSelectedRole('Chief Examiner')}>Chief Examiner</button>
