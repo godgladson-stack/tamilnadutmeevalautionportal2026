@@ -35,7 +35,7 @@ function App() {
   };
 
   const styles = {
-    body: { margin: 0, padding: 0, fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif", background: '#f5f7fa', minHeight: '100vh', display: 'flex', flexDirection: 'column' },
+    body: { margin: 0, padding: 0, fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif", background: '#f4f6f9', minHeight: '100vh', display: 'flex', flexDirection: 'column' },
     headerPanel: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '20px 40px', background: 'white', borderBottom: '1px solid #e0e0e0', boxShadow: '0 2px 5px rgba(0,0,0,0.05)' },
     profileBadge: { display: 'flex', alignItems: 'center', gap: '15px' },
     avatar: { width: '50px', height: '50px', borderRadius: '50%', objectFit: 'cover', border: '2px solid #4a90e2' },
@@ -44,16 +44,30 @@ function App() {
     userRole: { margin: 0, color: '#666', fontSize: '13px' },
     logoutButton: { background: '#ff5b5b', color: 'white', border: 'none', padding: '10px 20px', borderRadius: '20px', cursor: 'pointer' },
     dashboardContainer: { padding: '40px' },
-    mainContainer: { flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '20px' },
-    card: { background: 'white', padding: '50px', borderRadius: '20px', boxShadow: '0 15px 35px rgba(0,0,0,0.1)', width: '100%', maxWidth: '500px', textAlign: 'center', boxSizing: 'border-box' },
-    portalTitle: { color: '#1a365d', marginBottom: '40px', fontSize: '28px', fontWeight: '700', letterSpacing: '0.5px' },
-    loginTitle: { color: '#2d3748', marginBottom: '30px', fontSize: '24px', fontWeight: '600' },
-    buttonGroup: { display: 'flex', flexDirection: 'column', gap: '20px' },
-    button: { background: '#3182ce', color: 'white', border: 'none', padding: '18px 25px', fontSize: '18px', borderRadius: '30px', cursor: 'pointer', transition: 'all 0.3s ease', boxShadow: '0 4px 12px rgba(49,130,206,0.3)', width: '100%', fontWeight: '500' },
-    secondaryButton: { background: '#e2e8f0', color: '#4a5568', marginTop: '15px' },
-    inputGroup: { marginBottom: '25px', textAlign: 'left' },
-    label: { display: 'block', marginBottom: '10px', color: '#4a5568', fontSize: '16px', fontWeight: '500' },
-    input: { width: '100%', padding: '15px', border: '2px solid #cbd5e0', borderRadius: '12px', boxSizing: 'border-box', fontSize: '16px', outline: 'none', transition: 'border-color 0.2s' }
+    
+    // Portal Layout Styles
+    portalHeader: { background: '#ffffff', padding: '15px 25px', display: 'flex', alignItems: 'center', borderBottom: '3px solid #005a9c', boxShadow: '0 2px 4px rgba(0,0,0,0.05)' },
+    logo: { width: '60px', height: '60px', marginRight: '20px' },
+    headerText: { display: 'flex', flexDirection: 'column' },
+    titleTamil: { fontSize: '18px', fontWeight: 'bold', color: '#005a9c', margin: 0 },
+    titleEnglish: { fontSize: '14px', color: '#555', margin: 0 },
+    
+    mainLayout: { display: 'grid', gridTemplateColumns: '320px 1fr', gap: '20px', padding: '20px', maxWidth: '1200px', margin: '0 auto', width: '100%', boxSizing: 'border-box' },
+    sidebar: { background: '#ffffff', padding: '20px', borderRadius: '8px', border: '1px solid #e0e0e0', boxShadow: '0 2px 4px rgba(0,0,0,0.05)', height: 'fit-content' },
+    sidebarTitle: { fontSize: '15px', color: '#d9534f', fontWeight: 'bold', borderBottom: '2px solid #fee1dd', paddingBottom: '8px', marginBottom: '15px', display: 'flex', alignItems: 'center' },
+    marqueeBox: { background: '#fdf7f7', border: '1px solid #f5c6cb', color: '#721c24', padding: '12px', borderRadius: '5px', fontSize: '13px', marginBottom: '12px' },
+    
+    centerPanel: { background: '#ffffff', padding: '40px', borderRadius: '8px', border: '1px solid #e0e0e0', textAlign: 'center', boxShadow: '0 2px 4px rgba(0,0,0,0.05)' },
+    portalTitle: { color: '#005a9c', marginBottom: '30px', fontSize: '24px', fontWeight: '700', letterSpacing: '0.5px', textTransform: 'uppercase' },
+    
+    buttonGroup: { display: 'flex', flexDirection: 'column', gap: '15px', maxWidth: '400px', margin: '0 auto' },
+    button: { background: '#007bff', color: 'white', border: 'none', padding: '16px 25px', fontSize: '16px', borderRadius: '25px', cursor: 'pointer', transition: 'all 0.3s ease', boxShadow: '0 4px 6px rgba(0,123,255,0.2)', width: '100%', fontWeight: '600' },
+    secondaryButton: { background: '#e2e8f0', color: '#4a5568', marginTop: '15px', borderRadius: '25px', boxShadow: 'none' },
+    
+    loginTitle: { color: '#2d3748', marginBottom: '25px', fontSize: '22px', fontWeight: '600' },
+    inputGroup: { marginBottom: '20px', textAlign: 'left' },
+    label: { display: 'block', marginBottom: '8px', color: '#4a5568', fontSize: '15px', fontWeight: '500' },
+    input: { width: '100%', padding: '14px', border: '1px solid #cbd5e0', borderRadius: '8px', boxSizing: 'border-box', fontSize: '15px', outline: 'none' }
   };
 
   return (
@@ -76,40 +90,68 @@ function App() {
           {renderDashboard()}
         </div>
       ) : (
-        <div style={styles.mainContainer}>
-          <div style={styles.card}>
-            {!selectedRole ? (
-              <div>
-                <h1 style={styles.portalTitle}>Tamil Nadu TME Evaluation Portal 2026 OSDEE VALUATION</h1>
-                <div style={styles.buttonGroup}>
-                  <button style={styles.button} onClick={() => setSelectedRole('ERB Inspector')}>ERB Inspector</button>
-                  <button style={styles.button} onClick={() => setSelectedRole('Chief Examiner')}>Chief Examiner</button>
-                  <button style={styles.button} onClick={() => setSelectedRole('Scrutiny Officer')}>Scrutiny Officer</button>
-                  <button style={styles.button} onClick={() => setSelectedRole('Examiner')}>Examiner</button>
-                </div>
+        <>
+          <header style={styles.portalHeader}>
+            <img 
+              src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c3/Emblem_of_Tamil_Nadu.svg/1200px-Emblem_of_Tamil_Nadu.svg.png" 
+              alt="Tamil Nadu Emblem" 
+              style={styles.logo} 
+            />
+            <div style={styles.headerText}>
+              <h1 style={styles.titleTamil}>தமிழ்நாடு அரசு</h1>
+              <h2 style={styles.titleEnglish}>Directorate of Technical Education</h2>
+            </div>
+          </header>
+
+          <div style={styles.mainLayout}>
+            <aside style={styles.sidebar}>
+              <div style={styles.sidebarTitle}>
+                <span style={{ marginRight: '8px' }}>⚠️</span> Important Announcements
               </div>
-            ) : (
-              <div>
-                <h2 style={styles.loginTitle}>Login as {selectedRole}</h2>
-                <form onSubmit={handleLogin}>
-                  <div style={styles.inputGroup}>
-                    <label style={styles.label}>Username</label>
-                    <input style={styles.input} type="text" value={username} onChange={(e) => setUsername(e.target.value)} required />
-                  </div>
-                  <div style={styles.inputGroup}>
-                    <label style={styles.label}>Password</label>
-                    <input style={styles.input} type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
-                  </div>
+              <div style={styles.marqueeBox}>
+                <p style={{ margin: '0 0 6px 0', fontWeight: '600' }}>Enquiry Committee Notice</p>
+                <p style={{ margin: 0, fontSize: '12px' }}>Avoid Duplicates. Instructions are available on the portal.</p>
+              </div>
+              <div style={styles.marqueeBox}>
+                <p style={{ margin: '0 0 6px 0', fontWeight: '600' }}>Valuation Update</p>
+                <p style={{ margin: 0, fontSize: '12px' }}>OSDEE valuation guidelines updated for all active subjects.</p>
+              </div>
+            </aside>
+
+            <main style={styles.centerPanel}>
+              {!selectedRole ? (
+                <div>
+                  <h1 style={styles.portalTitle}>Tamil Nadu TME Evaluation Portal 2026 OSDEE VALUATION</h1>
                   <div style={styles.buttonGroup}>
-                    <button style={styles.button} type="submit">Login</button>
-                    <center>Need help? Please contact your system Adminisrtor</center>
-                    <button style={{...styles.button, ...styles.secondaryButton}} type="button" onClick={() => setSelectedRole(null)}>Back</button>
+                    <button style={styles.button} onClick={() => setSelectedRole('ERB Inspector')}>ERB Inspector</button>
+                    <button style={styles.button} onClick={() => setSelectedRole('Chief Examiner')}>Chief Examiner</button>
+                    <button style={styles.button} onClick={() => setSelectedRole('Scrutiny Officer')}>Scrutiny Officer</button>
+                    <button style={styles.button} onClick={() => setSelectedRole('Examiner')}>Examiner</button>
                   </div>
-                </form>
-              </div>
-            )}
+                </div>
+              ) : (
+                <div style={{ maxWidth: '400px', margin: '0 auto' }}>
+                  <h2 style={styles.loginTitle}>Login as {selectedRole}</h2>
+                  <form onSubmit={handleLogin}>
+                    <div style={styles.inputGroup}>
+                      <label style={styles.label}>Username</label>
+                      <input style={styles.input} type="text" value={username} onChange={(e) => setUsername(e.target.value)} required />
+                    </div>
+                    <div style={styles.inputGroup}>
+                      <label style={styles.label}>Password</label>
+                      <input style={styles.input} type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
+                    </div>
+                    <div style={styles.buttonGroup}>
+                      <button style={styles.button} type="submit">Login</button>
+                      <p style={{ fontSize: '13px', color: '#666', margin: '10px 0' }}>Need help? Please contact your system Administrator</p>
+                      <button style={{...styles.button, ...styles.secondaryButton}} type="button" onClick={() => setSelectedRole(null)}>Back</button>
+                    </div>
+                  </form>
+                </div>
+              )}
+            </main>
           </div>
-        </div>
+        </>
       )}
     </div>
   );
