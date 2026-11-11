@@ -93,7 +93,7 @@ function App() {
         <>
           <header style={styles.portalHeader}>
             <img 
-              src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c3/Emblem_of_Tamil_Nadu.svg/1200px-Emblem_of_Tamil_Nadu.svg.png" 
+              src="https://en.wikipedia.org/wiki/File:Seal_of_Tamil_Nadu.svg" 
               alt="Tamil Nadu Emblem" 
               style={styles.logo} 
             />
