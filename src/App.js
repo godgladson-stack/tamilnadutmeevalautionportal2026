@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import users from './/users';
+import users from './users';
 import ChiefExaminerDashboard from './ChiefExaminerDashboard';
 import ExaminerDashboard from './ExaminerDashboard';
 
@@ -146,7 +146,8 @@ function App() {
         <>
           <header style={styles.portalHeader}>
             <img 
-              src="<>" 
+              src="" 
+              alt="TNDTE Logo" 
               style={styles.logo} 
             />
             <div style={styles.headerText}>
