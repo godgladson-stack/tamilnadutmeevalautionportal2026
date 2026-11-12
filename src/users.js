@@ -90,6 +90,69 @@ const users = [
     name: 'Narayanan J',
     role: 'Examiner',
     photo: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150'
+  },
+  {
+    username: 'exam6',
+    password: 'password123',
+    name: 'Narayanan J',
+    role: 'Examiner',
+    photo: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150'
+  },
+  {
+    username: 'exam6',
+    password: 'password123',
+    name: 'Narayanan J',
+    role: 'Examiner',
+    photo: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150'
+  },
+  {
+    username: 'exam6',
+    password: 'password123',
+    name: 'Narayanan J',
+    role: 'Examiner',
+    photo: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150'
+  },
+  {
+    username: 'exam6',
+    password: 'password123',
+    name: 'Narayanan J',
+    role: 'Examiner',
+    photo: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150'
+  },
+  {
+    username: 'exam6',
+    password: 'password123',
+    name: 'Narayanan J',
+    role: 'Examiner',
+    photo: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150'
+  },
+  {
+    username: 'exam6',
+    password: 'password123',
+    name: 'Narayanan J',
+    role: 'Examiner',
+    photo: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150'
+  },
+  {
+    username: 'exam6',
+    password: 'password123',
+    name: 'Narayanan J',
+    role: 'Examiner',
+    photo: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150'
+  },
+  {
+    username: 'exam6',
+    password: 'password123',
+    name: 'Narayanan J',
+    role: 'Examiner',
+    photo: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150'
+  },
+  {
+    username: 'exam6',
+    password: 'password123',
+    name: 'Narayanan J',
+    role: 'Examiner',
+    photo: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150'
   }
 ];
 
