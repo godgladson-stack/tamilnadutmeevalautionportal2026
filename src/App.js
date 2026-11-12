@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import users from './users';
+import users from '/users';
 import ChiefExaminerDashboard from './ChiefExaminerDashboard';
 import ExaminerDashboard from './ExaminerDashboard';
 
@@ -64,10 +64,63 @@ function App() {
     button: { background: '#007bff', color: 'white', border: 'none', padding: '16px 25px', fontSize: '16px', borderRadius: '25px', cursor: 'pointer', transition: 'all 0.3s ease', boxShadow: '0 4px 6px rgba(0,123,255,0.2)', width: '100%', fontWeight: '600' },
     secondaryButton: { background: '#e2e8f0', color: '#4a5568', marginTop: '15px', borderRadius: '25px', boxShadow: 'none' },
     
-    loginTitle: { color: '#2d3748', marginBottom: '25px', fontSize: '22px', fontWeight: '600' },
-    inputGroup: { marginBottom: '20px', textAlign: 'left' },
-    label: { display: 'block', marginBottom: '8px', color: '#4a5568', fontSize: '15px', fontWeight: '500' },
-    input: { width: '100%', padding: '14px', border: '1px solid #cbd5e0', borderRadius: '8px', boxSizing: 'border-box', fontSize: '15px', outline: 'none' }
+    loginContainer: {
+      background: '#ffffff',
+      padding: '30px',
+      borderRadius: '8px',
+      boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)',
+      border: '1px solid #e2e8f0',
+      width: '100%',
+      maxWidth: '450px',
+      margin: '0 auto',
+      textAlign: 'left'
+    },
+    loginHeading: {
+      color: '#2d3748',
+      textAlign: 'center',
+      marginBottom: '25px',
+      fontSize: '22px',
+      fontWeight: '600',
+      borderBottom: '2px solid #edf2f7',
+      paddingBottom: '15px'
+    },
+    inputGroup: { marginBottom: '20px' },
+    label: { display: 'block', marginBottom: '8px', color: '#4a5568', fontSize: '14px', fontWeight: '500' },
+    input: {
+      width: '100%',
+      padding: '12px',
+      border: '1px solid #cbd5e0',
+      borderRadius: '4px',
+      boxSizing: 'border-box',
+      fontSize: '14px',
+      outline: 'none',
+      backgroundColor: '#f7fafc'
+    },
+    submitButton: {
+      width: '100%',
+      padding: '12px',
+      backgroundColor: '#3182ce',
+      color: 'white',
+      border: 'none',
+      borderRadius: '4px',
+      fontSize: '16px',
+      fontWeight: '600',
+      cursor: 'pointer',
+      marginBottom: '15px',
+      transition: 'background 0.2s'
+    },
+    forgotLinkContainer: { textAlign: 'center', marginBottom: '25px' },
+    forgotLink: { color: '#3182ce', fontSize: '14px', textDecoration: 'none' },
+    noticeBox: {
+      backgroundColor: '#feebc8',
+      border: '1px solid #f6e05e',
+      color: '#744210',
+      padding: '15px',
+      borderRadius: '4px',
+      fontSize: '13px',
+      lineHeight: '1.4',
+      textAlign: 'center'
+    }
   };
 
   return (
@@ -93,8 +146,7 @@ function App() {
         <>
           <header style={styles.portalHeader}>
             <img 
-              src="https://en.wikipedia.org/wiki/File:Seal_of_Tamil_Nadu.svg" 
-              alt="Tamil Nadu Emblem" 
+              src="<>" 
               style={styles.logo} 
             />
             <div style={styles.headerText}>
@@ -130,8 +182,8 @@ function App() {
                   </div>
                 </div>
               ) : (
-                <div style={{ maxWidth: '400px', margin: '0 auto' }}>
-                  <h2 style={styles.loginTitle}>Login as {selectedRole}</h2>
+                <div style={styles.loginContainer}>
+                  <h2 style={styles.loginHeading}>{selectedRole} Login</h2>
                   <form onSubmit={handleLogin}>
                     <div style={styles.inputGroup}>
                       <label style={styles.label}>Username</label>
@@ -141,12 +193,19 @@ function App() {
                       <label style={styles.label}>Password</label>
                       <input style={styles.input} type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
                     </div>
-                    <div style={styles.buttonGroup}>
-                      <button style={styles.button} type="submit">Login</button>
-                      <p style={{ fontSize: '13px', color: '#666', margin: '10px 0' }}>Need help? Please contact your system Administrator</p>
-                      <button style={{...styles.button, ...styles.secondaryButton}} type="button" onClick={() => setSelectedRole(null)}>Back</button>
+                    <button style={styles.submitButton} type="submit">Login</button>
+                    <div style={styles.forgotLinkContainer}>
+                      <a href="#forgot" onClick={(e) => { e.preventDefault(); alert('Reset link sent'); }} style={styles.forgotLink}>
+                        Forgot / Reset password?
+                      </a>
                     </div>
                   </form>
+                  <div style={styles.noticeBox}>
+                    Please ensure that all pages load properly before using OSDEE Web Application.
+                  </div>
+                  <div style={{ textAlign: 'center', marginTop: '20px' }}>
+                    <button style={{...styles.button, ...styles.secondaryButton, maxWidth: '200px', margin: '0 auto'}} type="button" onClick={() => setSelectedRole(null)}>Back</button>
+                  </div>
                 </div>
               )}
             </main>
