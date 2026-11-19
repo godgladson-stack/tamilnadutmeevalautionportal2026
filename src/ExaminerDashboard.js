@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef } from 'react';
 import { ZoomIn, ZoomOut, X, Slash, Eraser } from 'lucide-react';
 
 export default function EvaluationDashboard({
@@ -101,6 +101,7 @@ export default function EvaluationDashboard({
 
   return (
     <div className="flex h-screen w-screen overflow-hidden bg-gray-200 font-sans select-none">
+      {/* Left Side: Answer Script Viewer */}
       <div className="flex-1 overflow-auto bg-neutral-700 flex items-center justify-center p-6">
         <div
           ref={viewerRef}
@@ -145,7 +146,7 @@ export default function EvaluationDashboard({
               key={mark.id}
               onClick={(e) => handleMarkClick(e, mark.id)}
               style={{ left: `${mark.x}%`, top: `${mark.y}%` }}
-              className={`absolute -translate-x-1/2 -translate-y-1/2 text-red-650% -translate-y-1/2 text-red-600 font-bold transition-transform ${
+              className={`absolute -translate-x-1/2 -translate-y-1/2 text-red-600 font-bold transition-transform ${
                 activeTool === 'eraser'
                   ? 'hover:scale-125 hover:bg-red-100 rounded-full p-1 cursor-pointer'
                   : 'pointer-events-none'
@@ -161,8 +162,10 @@ export default function EvaluationDashboard({
         </div>
       </div>
 
+      {/* Right Side: Tools & Score Board */}
       <div className="w-[420px] bg-gray-100 border-l border-gray-300 flex flex-col justify-between p-4 shadow-lg">
         <div>
+          {/* Toolbar */}
           <div className="grid grid-cols-5 gap-1 bg-white p-2 rounded-lg border border-gray-300 shadow-sm mb-4">
             <button
               onClick={handleZoomIn}
@@ -229,6 +232,7 @@ export default function EvaluationDashboard({
             </button>
           </div>
 
+          {/* Score Board */}
           <div className="bg-white rounded-lg border border-gray-300 p-4 shadow-sm">
             <div className="flex items-center justify-between border-b border-gray-200 pb-2 mb-3">
               <h2 className="text-lg font-bold text-gray-800">Score Board</h2>
@@ -347,6 +351,7 @@ export default function EvaluationDashboard({
           </div>
         </div>
 
+        {/* Submit Button */}
         <div className="flex justify-end pt-3">
           <button
             onClick={handleSubmit}
