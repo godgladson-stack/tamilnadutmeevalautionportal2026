@@ -2,26 +2,21 @@ import React, { useState, useRef } from 'react';
 import { ZoomIn, ZoomOut, X, Slash, Eraser } from 'lucide-react';
 
 export default function EvaluationDashboard({
-  initialDummyNumber = '408921',
-  initialSubject = 'Typewriting English Senior Paper I',
-  initialExaminerId = 'E99887',
+  initialDummyNumber = '',
+  initialSubject = '',
+  initialExaminerId = '',
   scriptImageUrl = '/placeholder-script.jpg',
-  detectedParagraphs = 3,
-  paperType = 'Paper 1',
+  detectedParagraphs = 2,
   onSubmit
 }) {
   const [dummyNumber, setDummyNumber] = useState(initialDummyNumber);
   const [subject, setSubject] = useState(initialSubject);
   const [examinerId, setExaminerId] = useState(initialExaminerId);
   const [dateEvaluated] = useState(() =>
-    new Date().toLocaleDateString('en-GB', {
-      day: '2-digit',
-      month: 'short',
-      year: 'numeric',
-    })
+    new Date().toLocaleDateString('en-GB')
   );
 
-  const [activePaperType, setActivePaperType] = useState(paperType);
+  const [activePaperType, setActivePaperType] = useState('Speed'); // 'Speed' | 'StatementLetter'
   const [paragraphCount, setParagraphCount] = useState(detectedParagraphs);
   const detectedGrade = paragraphCount >= 3 ? 'Senior' : 'Junior';
 
@@ -30,14 +25,23 @@ export default function EvaluationDashboard({
   const [marks, setMarks] = useState([]);
   const viewerRef = useRef(null);
 
+  const getMaxMarks = () => {
+    if (activePaperType === 'Speed') return 100;
+    return detectedGrade === 'Junior' ? 100 : 100; // Statement 60 + Letter 40
+  };
+
+  const maxMarks = getMaxMarks();
+
   const getDeductionRates = () => {
-    if (activePaperType === 'Paper 2') {
-      return { full: 1.5, half: 0, label: '1.50' };
+    if (activePaperType === 'StatementLetter') {
+      return { full: 1.5, half: 0, label: '1.50 (Full only)' };
     }
+    // Speed Typing
     if (detectedGrade === 'Junior') {
       return { full: 1.8, half: 0.9, label: '1.80 / 0.90' };
     }
-    return { full: 1.25, half: 0, label: '1.25' };
+    // Senior Speed
+    return { full: 1.25, half: 1.4, label: '1.25 / 1.40' };
   };
 
   const rates = getDeductionRates();
@@ -48,7 +52,7 @@ export default function EvaluationDashboard({
 
   const totalDeducted =
     fullMistakeCount * rates.full + halfMistakeCount * rates.half;
-  const finalScore = Math.max(0, 100 - totalDeducted);
+  const finalScore = Math.max(0, maxMarks - totalDeducted);
 
   const handleZoomIn = () => setZoom((prev) => Math.min(prev + 0.2, 2.5));
   const handleZoomOut = () => setZoom((prev) => Math.max(prev - 0.2, 0.5));
@@ -83,8 +87,9 @@ export default function EvaluationDashboard({
       subject,
       dateEvaluated,
       examinerId,
-      paperType: activePaperType,
+      paperCategory: activePaperType,
       grade: detectedGrade,
+      maxMarks,
       fullMistakeCount,
       halfMistakeCount,
       totalDeducted: Number(totalDeducted.toFixed(2)),
@@ -101,7 +106,7 @@ export default function EvaluationDashboard({
 
   return (
     <div className="flex h-screen w-screen overflow-hidden bg-gray-200 font-sans select-none">
-      {/* Left Side: Answer Script Viewer */}
+      {/* Left Side: Script Viewer */}
       <div className="flex-1 overflow-auto bg-neutral-700 flex items-center justify-center p-6">
         <div
           ref={viewerRef}
@@ -123,22 +128,12 @@ export default function EvaluationDashboard({
               e.target.nextSibling.style.display = 'flex';
             }}
           />
-          <div className="hidden w-[700px] h-[950px] bg-amber-50/40 p-12 flex-col justify-start border border-gray-300 text-gray-800 font-mono text-lg leading-10">
-            <div className="border-b-2 border-gray-400 pb-2 mb-6 flex justify-between font-bold">
-              <span>DOTE TYPEWRITING EXAM - {activePaperType.toUpperCase()}</span>
-              <span>DUMMY NO: {dummyNumber}</span>
-            </div>
+          <div className="hidden w-[700px] h-[950px] bg-white p-12 flex-col justify-start border border-gray-300 text-gray-800 font-mono text-lg leading-10">
+            <p className="mb-4 font-bold text-xl text-center">DUMMY SCRIPT VIEWER</p>
             <p className="mb-4">
-              Click anywhere on this script sheet using the Red Cross (X) or Red Slash (/) tools to mark errors.
+              Auto-detected Category: {activePaperType} | Grade: {detectedGrade}
             </p>
-            <p className="mb-4">
-              Detected Format: {activePaperType} | {paragraphCount} Paragraphs ({detectedGrade} Grade)
-            </p>
-            {paragraphCount >= 3 && (
-              <p>
-                Third paragraph detected: Automatically applying Senior Grade evaluation rules.
-              </p>
-            )}
+            <p>Click to mark errors using active tool.</p>
           </div>
 
           {marks.map((mark) => (
@@ -200,19 +195,12 @@ export default function EvaluationDashboard({
 
             <button
               onClick={() => setActiveTool('slash')}
-              disabled={activePaperType === 'Paper 2' || detectedGrade === 'Senior'}
               className={`flex flex-col items-center justify-center p-2 rounded transition-colors ${
-                activePaperType === 'Paper 2' || detectedGrade === 'Senior'
-                  ? 'opacity-40 cursor-not-allowed text-gray-400'
-                  : activeTool === 'slash'
+                activeTool === 'slash'
                   ? 'bg-red-100 ring-2 ring-red-500 text-red-600'
                   : 'hover:bg-gray-100 text-red-600'
               }`}
-              title={
-                activePaperType === 'Paper 2' || detectedGrade === 'Senior'
-                  ? 'Half mistakes not applicable'
-                  : 'Red Slash (Half Mistake)'
-              }
+              title="Red Slash (Half Mistake)"
             >
               <Slash className="w-5 h-5 mb-1 stroke-[2.5]" />
               <span className="text-[11px] font-semibold">Red Slash</span>
@@ -241,6 +229,7 @@ export default function EvaluationDashboard({
               </span>
             </div>
 
+            {/* Editable Metadata */}
             <div className="space-y-2.5 text-sm mb-4">
               <div className="flex items-center justify-between">
                 <label className="text-gray-600 font-medium">Dummy Number:</label>
@@ -248,6 +237,7 @@ export default function EvaluationDashboard({
                   type="text"
                   value={dummyNumber}
                   onChange={(e) => setDummyNumber(e.target.value)}
+                  placeholder="Enter Dummy No"
                   className="w-48 text-right font-semibold text-gray-900 border-b border-dashed border-gray-300 focus:border-blue-500 focus:outline-none px-1"
                 />
               </div>
@@ -258,6 +248,7 @@ export default function EvaluationDashboard({
                   type="text"
                   value={subject}
                   onChange={(e) => setSubject(e.target.value)}
+                  placeholder="Enter Subject"
                   className="w-48 text-right font-semibold text-gray-900 border-b border-dashed border-gray-300 focus:border-blue-500 focus:outline-none px-1"
                 />
               </div>
@@ -273,65 +264,50 @@ export default function EvaluationDashboard({
                   type="text"
                   value={examinerId}
                   onChange={(e) => setExaminerId(e.target.value)}
+                  placeholder="Enter Examiner ID"
                   className="w-48 text-right font-semibold text-gray-900 border-b border-dashed border-gray-300 focus:border-blue-500 focus:outline-none px-1"
                 />
               </div>
             </div>
 
+            {/* Auto-Detection Overrides */}
             <div className="bg-gray-50 p-2.5 rounded border border-gray-200 mb-4 text-xs space-y-2">
               <div className="flex justify-between items-center">
                 <span className="text-gray-600 font-medium">Paper Category:</span>
                 <select
                   value={activePaperType}
-                  onChange={(e) => {
-                    setActivePaperType(e.target.value);
-                    if (e.target.value === 'Paper 2' && activeTool === 'slash') {
-                      setActiveTool('cross');
-                    }
-                  }}
+                  onChange={(e) => setActivePaperType(e.target.value)}
                   className="bg-white border border-gray-300 rounded px-2 py-0.5 font-semibold text-gray-800"
                 >
-                  <option value="Paper 1">Paper 1 (Speed)</option>
-                  <option value="Paper 2">Paper 2 (Statement/Letter)</option>
+                  <option value="Speed">Paper 1 (Speed Typing)</option>
+                  <option value="StatementLetter">Paper 2 (Statement & Letter)</option>
                 </select>
               </div>
 
-              {activePaperType === 'Paper 1' && (
-                <div className="flex justify-between items-center">
-                  <span className="text-gray-600 font-medium">Detected Paragraphs:</span>
-                  <select
-                    value={paragraphCount}
-                    onChange={(e) => {
-                      const count = Number(e.target.value);
-                      setParagraphCount(count);
-                      if (count >= 3 && activeTool === 'slash') {
-                        setActiveTool('cross');
-                      }
-                    }}
-                    className="bg-white border border-gray-300 rounded px-2 py-0.5 font-semibold text-gray-800"
-                  >
-                    <option value={2}>2 Paragraphs (Junior)</option>
-                    <option value={3}>3 Paragraphs (Senior)</option>
-                  </select>
-                </div>
-              )}
+              <div className="flex justify-between items-center">
+                <span className="text-gray-600 font-medium">Paragraphs / Grade:</span>
+                <select
+                  value={paragraphCount}
+                  onChange={(e) => setParagraphCount(Number(e.target.value))}
+                  className="bg-white border border-gray-300 rounded px-2 py-0.5 font-semibold text-gray-800"
+                >
+                  <option value={2}>2 Paragraphs (Junior)</option>
+                  <option value={3}>3 Paragraphs (Senior)</option>
+                </select>
+              </div>
             </div>
 
+            {/* Calculations */}
             <div className="border-t border-gray-200 pt-3 space-y-2 text-base">
               <div className="flex justify-between items-center">
                 <span className="font-semibold text-gray-700">Mistake Count:</span>
                 <span className="font-bold text-gray-900 text-lg">
-                  {totalMistakes}{' '}
-                  {activePaperType === 'Paper 1' && detectedGrade === 'Junior' && (
-                    <span className="text-xs font-normal text-gray-500">
-                      ({fullMistakeCount} Full, {halfMistakeCount} Half)
-                    </span>
-                  )}
+                  {totalMistakes}
                 </span>
               </div>
 
               <div className="flex justify-between items-center">
-                <span className="font-semibold text-gray-700">Deduction per Mistake:</span>
+                <span className="font-semibold text-gray-700">Deduction Rate (Full / Half):</span>
                 <span className="font-bold text-gray-900">{rates.label}</span>
               </div>
 
@@ -343,7 +319,8 @@ export default function EvaluationDashboard({
               </div>
             </div>
 
-            <div className="mt-4 border-2 border-gray-800 rounded-md py-3 px-4 bg-gray-50 text-center">
+            {/* Final Score Box */}
+            <div className="mt-4 border-2 border-gray-900 rounded-md py-3 px-4 bg-gray-50 text-center">
               <span className="text-2xl font-extrabold text-gray-900 tracking-tight">
                 Final Score: {finalScore.toFixed(2)}
               </span>
@@ -351,7 +328,7 @@ export default function EvaluationDashboard({
           </div>
         </div>
 
-        {/* Submit Button */}
+        {/* Submit Script Button Only */}
         <div className="flex justify-end pt-3">
           <button
             onClick={handleSubmit}
