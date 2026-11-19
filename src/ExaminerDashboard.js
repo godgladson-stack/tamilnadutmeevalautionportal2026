@@ -1,240 +1,361 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
+import { ZoomIn, ZoomOut, X, Slash, Eraser } from 'lucide-react';
 
-// Mock assigned papers
-const mockAssignedPapers = [
-  { id: 'PAP-1002', studentRollNo: '2026TME002', studentName: 'Deepa S', subject: 'Fluid Mechanics', scannedCopyUrl: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf', status: 'Assigned', remarks: '', markings: [] },
-  { id: 'PAP-1003', studentRollNo: '2026TME003', studentName: 'Vijay V', subject: 'Structural Analysis', scannedCopyUrl: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf', status: 'Assigned', remarks: '', markings: [] }
-];
+export default function EvaluationDashboard({
+  initialDummyNumber = '408921',
+  initialSubject = 'Typewriting English Senior Paper I',
+  initialExaminerId = 'E99887',
+  scriptImageUrl = '/placeholder-script.jpg',
+  detectedParagraphs = 3,
+  paperType = 'Paper 1',
+  onSubmit
+}) {
+  const [dummyNumber, setDummyNumber] = useState(initialDummyNumber);
+  const [subject, setSubject] = useState(initialSubject);
+  const [examinerId, setExaminerId] = useState(initialExaminerId);
+  const [dateEvaluated] = useState(() =>
+    new Date().toLocaleDateString('en-GB', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric',
+    })
+  );
 
-export default function ExaminerDashboard({ currentUser }) {
-  const [papers, setPapers] = useState(mockAssignedPapers);
-  const [activePaper, setActivePaper] = useState(null);
-  const [selectedTool, setSelectedTool] = useState('X'); // Default tool
-  const [currentRemarks, setCurrentRemarks] = useState('');
+  const [activePaperType, setActivePaperType] = useState(paperType);
+  const [paragraphCount, setParagraphCount] = useState(detectedParagraphs);
+  const detectedGrade = paragraphCount >= 3 ? 'Senior' : 'Junior';
 
-  const handleStartEvaluation = (paper) => {
-    setActivePaper({ ...paper, markings: paper.markings || [] });
-    setCurrentRemarks(paper.remarks || '');
+  const [activeTool, setActiveTool] = useState('cross');
+  const [zoom, setZoom] = useState(1);
+  const [marks, setMarks] = useState([]);
+  const viewerRef = useRef(null);
+
+  const getDeductionRates = () => {
+    if (activePaperType === 'Paper 2') {
+      return { full: 1.5, half: 0, label: '1.50' };
+    }
+    if (detectedGrade === 'Junior') {
+      return { full: 1.8, half: 0.9, label: '1.80 / 0.90' };
+    }
+    return { full: 1.25, half: 0, label: '1.25' };
   };
 
-  const handlePaperClick = (e) => {
-    if (!activePaper || activePaper.status === 'Evaluated') return;
+  const rates = getDeductionRates();
 
-    // Get click position relative to the paper container
+  const fullMistakeCount = marks.filter((m) => m.type === 'cross').length;
+  const halfMistakeCount = marks.filter((m) => m.type === 'slash').length;
+  const totalMistakes = fullMistakeCount + halfMistakeCount;
+
+  const totalDeducted =
+    fullMistakeCount * rates.full + halfMistakeCount * rates.half;
+  const finalScore = Math.max(0, 100 - totalDeducted);
+
+  const handleZoomIn = () => setZoom((prev) => Math.min(prev + 0.2, 2.5));
+  const handleZoomOut = () => setZoom((prev) => Math.max(prev - 0.2, 0.5));
+
+  const handleCanvasClick = (e) => {
+    if (activeTool === 'eraser') return;
     const rect = e.currentTarget.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
+    const x = ((e.clientX - rect.left) / rect.width) * 100;
+    const y = ((e.clientY - rect.top) / rect.height) * 100;
 
-    const newMarking = {
-      id: Date.now(),
-      type: selectedTool,
-      x: x,
-      y: y
-    };
-
-    setActivePaper(prev => ({
+    setMarks((prev) => [
       ...prev,
-      markings: [...prev.markings, newMarking]
-    }));
+      {
+        id: Date.now() + Math.random(),
+        x,
+        y,
+        type: activeTool,
+      },
+    ]);
   };
 
-  const handleSubmitEvaluation = () => {
-    if (!activePaper) return;
-
-    setPapers(prev => prev.map(p => {
-      if (p.id === activePaper.id) {
-        return {
-          ...p,
-          status: 'Evaluated',
-          remarks: currentRemarks || 'Evaluated and Sent to Chief Examiner',
-          markings: activePaper.markings
-        };
-      }
-      return p;
-    }));
-
-    setActivePaper(null);
+  const handleMarkClick = (e, id) => {
+    if (activeTool === 'eraser') {
+      e.stopPropagation();
+      setMarks((prev) => prev.filter((m) => m.id !== id));
+    }
   };
 
-  const styles = {
-    container: { padding: '30px', fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif", background: '#f8fafc', minHeight: '100vh' },
-    header: { color: '#1a365d', marginBottom: '30px', fontWeight: '700' },
-    statsGrid: { display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '20px', marginBottom: '30px' },
-    statCard: { background: '#ffffff', padding: '20px', borderRadius: '12px', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)', textAlign: 'center', border: '1px solid #e2e8f0' },
-    statNumber: { fontSize: '28px', fontWeight: 'bold', color: '#2b6cb0', margin: '0 0 5px 0' },
-    statLabel: { margin: 0, color: '#718096', fontSize: '14px', fontWeight: '500' },
-    tableContainer: { background: '#ffffff', borderRadius: '12px', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)', overflow: 'hidden', border: '1px solid #e2e8f0' },
-    table: { width: '100%', borderCollapse: 'collapse', textAlign: 'left' },
-    th: { background: '#ebf8ff', color: '#2b6cb0', padding: '16px 20px', fontSize: '14px', fontWeight: '600', borderBottom: '2px solid #bee3f8' },
-    td: { padding: '16px 20px', borderBottom: '1px solid #edf2f7', color: '#2d3748', verticalAlign: 'middle' },
-    textarea: { padding: '8px 12px', borderRadius: '6px', border: '1px solid #cbd5e0', width: '100%', fontSize: '14px', outline: 'none', resize: 'vertical', boxSizing: 'border-box' },
-    btn: { background: '#48bb78', color: '#fff', border: 'none', padding: '10px 16px', borderRadius: '6px', fontSize: '14px', fontWeight: '600', cursor: 'pointer', transition: 'background 0.2s' },
-    btnPrimary: { background: '#3182ce', color: '#fff', border: 'none', padding: '8px 14px', borderRadius: '6px', fontSize: '13px', fontWeight: '600', cursor: 'pointer' },
-    btnSecondary: { background: '#e2e8f0', color: '#4a5568', border: 'none', padding: '8px 14px', borderRadius: '6px', fontSize: '13px', fontWeight: '600', cursor: 'pointer' },
-    badgeAssigned: { background: '#ebf8ff', color: '#2b6cb0', padding: '6px 12px', borderRadius: '20px', fontSize: '12px', fontWeight: '600', display: 'inline-block' },
-    badgeEvaluated: { background: '#c6f6d5', color: '#22543d', padding: '6px 12px', borderRadius: '20px', fontSize: '12px', fontWeight: '600', display: 'inline-block' },
-    
-    // Evaluation Screen Styles
-    evalContainer: { display: 'flex', gap: '20px', background: '#ffffff', padding: '20px', borderRadius: '12px', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)', border: '1px solid #e2e8f0' },
-    paperViewer: { flex: 1, position: 'relative', border: '2px dashed #cbd5e0', borderRadius: '8px', minHeight: '500px', background: '#fafafa', cursor: 'crosshair', padding: '20px', overflow: 'hidden' },
-    toolBar: { position: 'absolute', top: '15px', left: '15px', display: 'flex', gap: '8px', background: '#ffffff', padding: '6px', borderRadius: '6px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)', zIndex: 10 },
-    toolBtn: (active) => ({
-      color: '#e53e3e',
-      border: active ? '2px solid #e53e3e' : '1px solid #cbd5e0',
-      background: active ? '#fff5f5' : '#ffffff',
-      padding: '2px 8px',
-      fontSize: '14px',
-      fontWeight: 'bold',
-      borderRadius: '4px',
-      cursor: 'pointer'
-    }),
-    sidePanel: { width: '320px', display: 'flex', flexDirection: 'column', gap: '15px' }
+  const handleSubmit = () => {
+    const payload = {
+      dummyNumber,
+      subject,
+      dateEvaluated,
+      examinerId,
+      paperType: activePaperType,
+      grade: detectedGrade,
+      fullMistakeCount,
+      halfMistakeCount,
+      totalDeducted: Number(totalDeducted.toFixed(2)),
+      finalScore: Number(finalScore.toFixed(2)),
+      annotations: marks,
+    };
+    if (onSubmit) {
+      onSubmit(payload);
+    } else {
+      console.log('Submitted Evaluation:', payload);
+      alert(`Script Submitted! Final Score: ${finalScore.toFixed(2)}`);
+    }
   };
-
-  const assignedCount = papers.filter(p => p.status === 'Assigned').length;
-  const evaluatedCount = papers.filter(p => p.status === 'Evaluated').length;
 
   return (
-    <div style={styles.container}>
-      <h2 style={styles.header}>Examiner Dashboard - Evaluation Papers</h2>
-
-      {!activePaper ? (
-        <>
-          <div style={styles.statsGrid}>
-            <div style={styles.statCard}>
-              <p style={styles.statNumber}>{assignedCount}</p>
-              <p style={styles.statLabel}>Pending Evaluation</p>
+    <div className="flex h-screen w-screen overflow-hidden bg-gray-200 font-sans select-none">
+      <div className="flex-1 overflow-auto bg-neutral-700 flex items-center justify-center p-6">
+        <div
+          ref={viewerRef}
+          onClick={handleCanvasClick}
+          style={{
+            transform: `scale(${zoom})`,
+            transformOrigin: 'top center',
+          }}
+          className={`relative bg-white shadow-2xl transition-transform duration-150 ${
+            activeTool === 'eraser' ? 'cursor-cell' : 'cursor-crosshair'
+          }`}
+        >
+          <img
+            src={scriptImageUrl}
+            alt="Answer Script"
+            className="max-w-[750px] w-full h-auto block pointer-events-none"
+            onError={(e) => {
+              e.target.style.display = 'none';
+              e.target.nextSibling.style.display = 'flex';
+            }}
+          />
+          <div className="hidden w-[700px] h-[950px] bg-amber-50/40 p-12 flex-col justify-start border border-gray-300 text-gray-800 font-mono text-lg leading-10">
+            <div className="border-b-2 border-gray-400 pb-2 mb-6 flex justify-between font-bold">
+              <span>DOTE TYPEWRITING EXAM - {activePaperType.toUpperCase()}</span>
+              <span>DUMMY NO: {dummyNumber}</span>
             </div>
-            <div style={styles.statCard}>
-              <p style={styles.statNumber}>{evaluatedCount}</p>
-              <p style={styles.statLabel}>Evaluated Papers</p>
-            </div>
-          </div>
-
-          <div style={styles.tableContainer}>
-            <table style={styles.table}>
-              <thead>
-                <tr>
-                  <th style={styles.th}>Paper ID</th>
-                  <th style={styles.th}>Student Roll No</th>
-                  <th style={styles.th}>Student Name</th>
-                  <th style={styles.th}>Subject</th>
-                  <th style={styles.th}>Status</th>
-                  <th style={styles.th}>Remarks</th>
-                  <th style={{...styles.th, textAlign: 'center'}}>Action</th>
-                </tr>
-              </thead>
-              <tbody>
-                {papers.map(paper => (
-                  <tr key={paper.id}>
-                    <td style={{...styles.td, fontWeight: '600'}}>{paper.id}</td>
-                    <td style={styles.td}>{paper.studentRollNo}</td>
-                    <td style={{...styles.td, fontWeight: '500'}}>{paper.studentName}</td>
-                    <td style={styles.td}>{paper.subject}</td>
-                    <td style={styles.td}>
-                      <span style={paper.status === 'Evaluated' ? styles.badgeEvaluated : styles.badgeAssigned}>
-                        {paper.status}
-                      </span>
-                    </td>
-                    <td style={styles.td}>{paper.remarks || '-'}</td>
-                    <td style={{...styles.td, textAlign: 'center'}}>
-                      <button 
-                        style={styles.btnPrimary} 
-                        onClick={() => handleStartEvaluation(paper)}
-                      >
-                        {paper.status === 'Evaluated' ? 'View Evaluation' : 'Start Evaluation'}
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </>
-      ) : (
-        <div style={styles.evalContainer}>
-          {/* Paper Canvas Area */}
-          <div style={styles.paperViewer} onClick={handlePaperClick}>
-            {activePaper.status !== 'Evaluated' && (
-              <div style={styles.toolBar} onClick={(e) => e.stopPropagation()}>
-                <button 
-                  style={styles.toolBtn(selectedTool === 'X')} 
-                  onClick={() => setSelectedTool('X')}
-                >
-                  X
-                </button>
-                <button 
-                  style={styles.toolBtn(selectedTool === '/')} 
-                  onClick={() => setSelectedTool('/')}
-                >
-                  /
-                </button>
-              </div>
+            <p className="mb-4">
+              Click anywhere on this script sheet using the Red Cross (X) or Red Slash (/) tools to mark errors.
+            </p>
+            <p className="mb-4">
+              Detected Format: {activePaperType} | {paragraphCount} Paragraphs ({detectedGrade} Grade)
+            </p>
+            {paragraphCount >= 3 && (
+              <p>
+                Third paragraph detected: Automatically applying Senior Grade evaluation rules.
+              </p>
             )}
-
-            <div style={{ textAlign: 'center', marginTop: '40px', color: '#a0aec0' }}>
-              <h4 style={{ color: '#2d3748', margin: '0 0 10px 0' }}>{activePaper.subject} ({activePaper.id})</h4>
-              <p style={{ fontSize: '13px' }}>Click anywhere on this document area to add evaluation marks.</p>
-            </div>
-
-            {/* Render markings placed on paper */}
-            {activePaper.markings.map(m => (
-              <span 
-                key={m.id} 
-                style={{
-                  position: 'absolute',
-                  left: `${m.x}px`,
-                  top: `${m.y}px`,
-                  color: '#e53e3e',
-                  fontSize: '16px',
-                  fontWeight: 'bold',
-                  userSelect: 'none',
-                  pointerEvents: 'none',
-                  transform: 'translate(-50%, -50%)'
-                }}
-              >
-                {m.type}
-              </span>
-            ))}
           </div>
 
-          {/* Side Panel for Remarks & Actions */}
-          <div style={styles.sidePanel}>
-            <h3 style={{ color: '#1a365d', margin: 0, fontSize: '18px' }}>Evaluation Controls</h3>
-            <div>
-              <p style={{ margin: '0 0 5px 0', fontSize: '13px', color: '#4a5568', fontWeight: '600' }}>Student Details:</p>
-              <p style={{ margin: 0, fontSize: '14px', color: '#2d3748' }}>{activePaper.studentName} ({activePaper.studentRollNo})</p>
+          {marks.map((mark) => (
+            <div
+              key={mark.id}
+              onClick={(e) => handleMarkClick(e, mark.id)}
+              style={{ left: `${mark.x}%`, top: `${mark.y}%` }}
+              className={`absolute -translate-x-1/2 -translate-y-1/2 text-red-650% -translate-y-1/2 text-red-600 font-bold transition-transform ${
+                activeTool === 'eraser'
+                  ? 'hover:scale-125 hover:bg-red-100 rounded-full p-1 cursor-pointer'
+                  : 'pointer-events-none'
+              }`}
+            >
+              {mark.type === 'cross' ? (
+                <X className="w-8 h-8 stroke-[3]" />
+              ) : (
+                <Slash className="w-8 h-8 stroke-[3]" />
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="w-[420px] bg-gray-100 border-l border-gray-300 flex flex-col justify-between p-4 shadow-lg">
+        <div>
+          <div className="grid grid-cols-5 gap-1 bg-white p-2 rounded-lg border border-gray-300 shadow-sm mb-4">
+            <button
+              onClick={handleZoomIn}
+              className="flex flex-col items-center justify-center p-2 rounded hover:bg-gray-100 text-gray-800"
+              title="Zoom In"
+            >
+              <ZoomIn className="w-5 h-5 mb-1" />
+              <span className="text-[11px] font-medium">Zoom In</span>
+            </button>
+
+            <button
+              onClick={handleZoomOut}
+              className="flex flex-col items-center justify-center p-2 rounded hover:bg-gray-100 text-gray-800"
+              title="Zoom Out"
+            >
+              <ZoomOut className="w-5 h-5 mb-1" />
+              <span className="text-[11px] font-medium">Zoom Out</span>
+            </button>
+
+            <button
+              onClick={() => setActiveTool('cross')}
+              className={`flex flex-col items-center justify-center p-2 rounded transition-colors ${
+                activeTool === 'cross'
+                  ? 'bg-red-100 ring-2 ring-red-500 text-red-600'
+                  : 'hover:bg-gray-100 text-red-600'
+              }`}
+              title="Red Cross (Full Mistake)"
+            >
+              <X className="w-5 h-5 mb-1 stroke-[2.5]" />
+              <span className="text-[11px] font-semibold">Red Cross</span>
+            </button>
+
+            <button
+              onClick={() => setActiveTool('slash')}
+              disabled={activePaperType === 'Paper 2' || detectedGrade === 'Senior'}
+              className={`flex flex-col items-center justify-center p-2 rounded transition-colors ${
+                activePaperType === 'Paper 2' || detectedGrade === 'Senior'
+                  ? 'opacity-40 cursor-not-allowed text-gray-400'
+                  : activeTool === 'slash'
+                  ? 'bg-red-100 ring-2 ring-red-500 text-red-600'
+                  : 'hover:bg-gray-100 text-red-600'
+              }`}
+              title={
+                activePaperType === 'Paper 2' || detectedGrade === 'Senior'
+                  ? 'Half mistakes not applicable'
+                  : 'Red Slash (Half Mistake)'
+              }
+            >
+              <Slash className="w-5 h-5 mb-1 stroke-[2.5]" />
+              <span className="text-[11px] font-semibold">Red Slash</span>
+            </button>
+
+            <button
+              onClick={() => setActiveTool('eraser')}
+              className={`flex flex-col items-center justify-center p-2 rounded transition-colors ${
+                activeTool === 'eraser'
+                  ? 'bg-blue-100 ring-2 ring-blue-500 text-blue-700'
+                  : 'hover:bg-gray-100 text-gray-800'
+              }`}
+              title="Eraser"
+            >
+              <Eraser className="w-5 h-5 mb-1" />
+              <span className="text-[11px] font-medium">Eraser</span>
+            </button>
+          </div>
+
+          <div className="bg-white rounded-lg border border-gray-300 p-4 shadow-sm">
+            <div className="flex items-center justify-between border-b border-gray-200 pb-2 mb-3">
+              <h2 className="text-lg font-bold text-gray-800">Score Board</h2>
+              <span className="text-xs font-semibold px-2 py-0.5 rounded bg-blue-100 text-blue-800">
+                {activePaperType} • {detectedGrade}
+              </span>
             </div>
 
-            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              <label style={{ fontSize: '13px', color: '#4a5568', fontWeight: '600' }}>Remarks:</label>
-              {activePaper.status === 'Evaluated' ? (
-                <div style={{ padding: '10px', background: '#f7fafc', border: '1px solid #e2e8f0', borderRadius: '6px', fontSize: '14px', color: '#2d3748' }}>
-                  {activePaper.remarks}
-                </div>
-              ) : (
-                <textarea 
-                  rows="6" 
-                  placeholder="Enter evaluation feedback..."
-                  style={styles.textarea}
-                  value={currentRemarks}
-                  onChange={(e) => setCurrentRemarks(e.target.value)}
+            <div className="space-y-2.5 text-sm mb-4">
+              <div className="flex items-center justify-between">
+                <label className="text-gray-600 font-medium">Dummy Number:</label>
+                <input
+                  type="text"
+                  value={dummyNumber}
+                  onChange={(e) => setDummyNumber(e.target.value)}
+                  className="w-48 text-right font-semibold text-gray-900 border-b border-dashed border-gray-300 focus:border-blue-500 focus:outline-none px-1"
                 />
+              </div>
+
+              <div className="flex items-center justify-between">
+                <label className="text-gray-600 font-medium">Subject:</label>
+                <input
+                  type="text"
+                  value={subject}
+                  onChange={(e) => setSubject(e.target.value)}
+                  className="w-48 text-right font-semibold text-gray-900 border-b border-dashed border-gray-300 focus:border-blue-500 focus:outline-none px-1"
+                />
+              </div>
+
+              <div className="flex items-center justify-between">
+                <span className="text-gray-600 font-medium">Date Evaluated:</span>
+                <span className="font-semibold text-gray-900">{dateEvaluated}</span>
+              </div>
+
+              <div className="flex items-center justify-between">
+                <label className="text-gray-600 font-medium">Examiner ID:</label>
+                <input
+                  type="text"
+                  value={examinerId}
+                  onChange={(e) => setExaminerId(e.target.value)}
+                  className="w-48 text-right font-semibold text-gray-900 border-b border-dashed border-gray-300 focus:border-blue-500 focus:outline-none px-1"
+                />
+              </div>
+            </div>
+
+            <div className="bg-gray-50 p-2.5 rounded border border-gray-200 mb-4 text-xs space-y-2">
+              <div className="flex justify-between items-center">
+                <span className="text-gray-600 font-medium">Paper Category:</span>
+                <select
+                  value={activePaperType}
+                  onChange={(e) => {
+                    setActivePaperType(e.target.value);
+                    if (e.target.value === 'Paper 2' && activeTool === 'slash') {
+                      setActiveTool('cross');
+                    }
+                  }}
+                  className="bg-white border border-gray-300 rounded px-2 py-0.5 font-semibold text-gray-800"
+                >
+                  <option value="Paper 1">Paper 1 (Speed)</option>
+                  <option value="Paper 2">Paper 2 (Statement/Letter)</option>
+                </select>
+              </div>
+
+              {activePaperType === 'Paper 1' && (
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-600 font-medium">Detected Paragraphs:</span>
+                  <select
+                    value={paragraphCount}
+                    onChange={(e) => {
+                      const count = Number(e.target.value);
+                      setParagraphCount(count);
+                      if (count >= 3 && activeTool === 'slash') {
+                        setActiveTool('cross');
+                      }
+                    }}
+                    className="bg-white border border-gray-300 rounded px-2 py-0.5 font-semibold text-gray-800"
+                  >
+                    <option value={2}>2 Paragraphs (Junior)</option>
+                    <option value={3}>3 Paragraphs (Senior)</option>
+                  </select>
+                </div>
               )}
             </div>
 
-            {activePaper.status !== 'Evaluated' && (
-              <button style={styles.btn} onClick={handleSubmitEvaluation}>
-                Submit Evaluation
-              </button>
-            )}
+            <div className="border-t border-gray-200 pt-3 space-y-2 text-base">
+              <div className="flex justify-between items-center">
+                <span className="font-semibold text-gray-700">Mistake Count:</span>
+                <span className="font-bold text-gray-900 text-lg">
+                  {totalMistakes}{' '}
+                  {activePaperType === 'Paper 1' && detectedGrade === 'Junior' && (
+                    <span className="text-xs font-normal text-gray-500">
+                      ({fullMistakeCount} Full, {halfMistakeCount} Half)
+                    </span>
+                  )}
+                </span>
+              </div>
 
-            <button style={styles.btnSecondary} onClick={() => setActivePaper(null)}>
-              Back to List
-            </button>
+              <div className="flex justify-between items-center">
+                <span className="font-semibold text-gray-700">Deduction per Mistake:</span>
+                <span className="font-bold text-gray-900">{rates.label}</span>
+              </div>
+
+              <div className="flex justify-between items-center">
+                <span className="font-semibold text-gray-700">Total Deducted:</span>
+                <span className="font-bold text-red-600 text-lg">
+                  {totalDeducted.toFixed(2)}
+                </span>
+              </div>
+            </div>
+
+            <div className="mt-4 border-2 border-gray-800 rounded-md py-3 px-4 bg-gray-50 text-center">
+              <span className="text-2xl font-extrabold text-gray-900 tracking-tight">
+                Final Score: {finalScore.toFixed(2)}
+              </span>
+            </div>
           </div>
         </div>
-      )}
+
+        <div className="flex justify-end pt-3">
+          <button
+            onClick={handleSubmit}
+            className="bg-green-600 hover:bg-green-700 active:bg-green-800 text-white font-bold py-2.5 px-6 rounded shadow transition-colors"
+          >
+            Submit Script
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
